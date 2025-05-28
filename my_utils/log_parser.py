@@ -39,3 +39,36 @@ def extract_serial_from_deviceconfiguration(directory):
         print(f"Error reading serial from config: {e}")
 
     return "UNKNOWN"
+
+#file to parse is located in c$\ProgramData\R50\Axeda\Reports\*.txt
+def extract_odometer_lifetime_values(file_path):
+    marker = "----------------- ----------------- ----------------- -----------------"
+    block_found = False
+    line_count = 0
+    dispenses = acceptance = bnr_total = None
+
+    with open(file_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line == marker:
+                block_found = True
+                line_count = 0
+                continue
+
+            if block_found:
+                line_count += 1
+                parts = line.split()
+                if not parts or len(parts) < 2:
+                    continue
+
+                if parts[0] == "Dispenses":
+                    dispenses = int(parts[1])
+                elif parts[0] == "Acceptance":
+                    acceptance = int(parts[1])
+                elif parts[0] == "BNR" and parts[1] == "Total":
+                    bnr_total = int(parts[2])
+
+                if line_count >= 3:
+                    break
+
+    return dispenses, acceptance, bnr_total

@@ -1,68 +1,71 @@
-# SMB Toolkit - Log Collection Utility
+## 📦 Python Utilities Toolkit
 
-## Overview
+### Overview
 
-This project is a Python-based tool designed to connect to remote SMB shares, retrieve log files, and extract identifying information like serial numbers. It supports features like date filtering, regex-based filename matching, and temporary storage for local analysis.
+This repository contains a modular collection of **Python-based utility tools**, originally focused on SMB log retrieval and now expanding toward a broader set of **system operations**, **file parsing**, and **automation** tasks. The goal is to create a **reusable toolkit** for internal engineering and infrastructure workflows.
 
-## Purpose
+---
 
-The goal of this project is to evolve into a **modular**, **maintainable**, and **professional-grade** logging utility that adheres to Python best practices and is easy to scale for additional features.
+### Purpose
 
-## Current Features
+The repo is evolving into a **multi-purpose utility suite** with professional structure and Python best practices. It aims to serve as a foundation for:
 
-* Connect to SMB shares with fallback credentials
-* Download files with date and regex filters
-* Extract serial numbers from the latest log files
-* Temporary file handling and cleanup
-* Command-line interface with `argparse`
+* System administration automation
+* Log extraction and analysis
+* Environment-specific tool development
+* General internal scripting needs
 
-## In Progress
+---
 
-This project is being actively refactored toward the following intended structure:
+### Current Features
+
+* Fetch VPN IPs for devices from a remote management system
+* Connect to SMB shares using multiple credentials
+* Retrieve and filter log files by date and pattern
+* Extract serial numbers and odometer-like data from reports
+* Run via CLI with automatic fallback behavior
+* Uses `argparse` with optional serial overrides
+
+---
+
+### Repository Layout (Planned)
 
 ```
-smb_toolkit/
+my_utils/
 │
-├── smb_toolkit/                  # Core package
-│   ├── __init__.py
-│   ├── cli.py                    # Argument parsing & CLI
-│   ├── runner.py                 # Task orchestration
-│   ├── smb_utils.py              # SMB connection abstraction
-│   ├── log_parser.py             # File parsing logic
-│   └── config.py                 # Constants and defaults
+├── RM_scraper.py                # VPN portal interaction
+├── smb_utils.py                 # SMB connection logic
+├── log_parser.py                # File parsing and serial extraction
+├── odo_fetch.py                 # Entry script for pulling device logs
+├── runner.py                    # Orchestrator (optional future split)
 │
-├── tasks/                        # High-level operational flows
-│   └── log_download.py
+├── tests/                       # (Optional) Unit tests
 │
-├── tests/                        # Unit tests
-│   └── test_log_parser.py
-│
-├── requirements.txt              # Dependencies
-├── pyproject.toml                # (optional) Build metadata
-├── README.md                     # Project overview
-└── main.py                       # Entry point
+├── requirements.txt
+├── README.md
 ```
 
-## Future Plans
+---
 
-* Add unit tests for SMB logic and parsing
-* Implement a plugin system for new device types
-* Support multiple share types and platforms
-* Convert to `click` or `typer` for richer CLI
-* Provide Docker support or PyInstaller packaging
+### Future Goals
 
-## Usage Example (WIP)
+* Standardize all tools into callable CLI modules
+* Migrate to `typer` or `click` for better CLI UX
+* Add test coverage for all utilities
+* Integrate `.env` loading for flexible configuration
+* Add additional utilities (e.g., remote config pull, health checks)
+
+---
+
+### Example Usage
 
 ```bash
-python main.py \
-  --ip 192.168.1.100 \
-  --user TIDEL\\Tservice \
-  --regex "^Log_.*\\.zip$" \
-  --days-back 3
+python odo_fetch.py             # Uses default serial
+python odo_fetch.py N4R99999    # Uses a specific serial
 ```
 
-## Author Notes
+---
 
-This is a work in progress toward a professional-grade utility, with refactoring in progress to separate universal logic from application-specific logic.
+### Author Notes
 
-Contributions, structure feedback, or extensions are welcome!
+This is a work in progress toward a professional-grade internal toolkit. Contributions, ideas for structural improvements, and additional modules are welcome.

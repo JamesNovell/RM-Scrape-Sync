@@ -1,6 +1,7 @@
 # smb_utils.py
 import os
 import datetime
+import socket
 from smb.SMBConnection import SMBConnection
 
 class SMBHandler:
@@ -11,20 +12,23 @@ class SMBHandler:
         self.share_name = share_name
         self.connection = None
 
+
     def connect(self):
         domain, username = self.smb_user.split('\\')
+        hostname = socket.gethostname()
         for password in self.passwords:
             if not password:
                 continue
             conn = SMBConnection(
                 username, password,
-                os.uname().nodename, self.ip,
-                domain=domain, use_ntlm_v2=True
+                hostname, self.ip,
+                domain=domain, use_ntlm_v2=True, is_direct_tcp=True
             )
             if conn.connect(self.ip, 445):
                 self.connection = conn
                 return True
         return False
+
 
     def list_files(self, remote_path, regex=None, start_date=None, end_date=None, days_back=None):
         import re

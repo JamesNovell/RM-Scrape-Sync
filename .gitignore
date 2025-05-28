@@ -1,0 +1,38 @@
+# Ignore build and packaging artifacts
+*.egg-info/
+dist/
+build/
+
+# Bytecode and cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Environment and OS
+.env
+.env.*
+*.swp
+.DS_Store
+Thumbs.db
+
+# Session or secret files
+session_cookies.pkl
+
+# Log or runtime artifacts
+*.log
+*.tmp
+*.bak
+
+# Ignore virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# IDE/editor config
+.vscode/
+.idea/
+
+# Optional: ignore local scripts that modify the system
+modify_system_env.py
