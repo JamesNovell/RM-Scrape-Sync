@@ -5,6 +5,7 @@ import re
 import pickle
 import os
 import json
+import sys
 
 class VPNLogPuller:
     def __init__(self, username, password):
@@ -39,17 +40,28 @@ class VPNLogPuller:
                 return
             else:
                 print("Session expired, logging in again.")
-
+    
         g = self.session.get(self.login_url)
-        token = BeautifulSoup(g.text, 'html.parser').find('input', {'name': '__RequestVerificationToken'})['value']
+        token_tag = BeautifulSoup(g.text, 'html.parser').find('input', {'name': '__RequestVerificationToken'})
+        if not token_tag:
+            sys.exit("Login page did not load correctly (token not found).")
+    
+        token = token_tag['value']
         payload = {
             'Username': self.username,
             'Password': self.password,
             '__RequestVerificationToken': token
         }
-        self.session.post(self.login_url, data=payload)
+        login_response = self.session.post(self.login_url, data=payload)
+    
+        # Check for login failure
+        if "Login | Sesami" in login_response.text or "Username" in login_response.text:
+            print("Login failed. Please check your credentials.")
+            sys.exit(1)
+    
         self.save_session()
         print("Logged in and session saved.")
+
 
     def fetch_vpn_info(self):
         for page_number in range(1, 273):
@@ -89,6 +101,8 @@ class VPNLogPuller:
     
         # Parse the returned response
         try:
+            if toggle_response is None:
+                raise ValueError("toggle_response is None")
             raw = toggle_response.text
             if raw.startswith('"') and raw.endswith('"'):
                 raw = raw[1:-1]
@@ -127,7 +141,6 @@ class VPNLogPuller:
         search_url = f"https://rsm.tidel.com/DeviceList?SearchSerialNumber={target_serial}&PageSize=25&PageIndex=1"
         r = self.session.get(search_url)
         soup = BeautifulSoup(r.content, 'lxml')
-    
         vpn_button = soup.find("button", id=f"{target_serial}VPN")
         if not vpn_button:
             print("VPN button not found.")
@@ -141,7 +154,6 @@ class VPNLogPuller:
             return None, None
     
         device_id = device_id_match.group(1)
-        print(f"Device ID: {device_id}")
     
         payload2 = {
             'email': self.username,
