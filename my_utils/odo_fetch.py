@@ -43,8 +43,8 @@ class OdometerFetcher:
         try:
             all_files = self.smb.list_files(remote_path)
             print(f"[DEBUG] Total files in directory '{remote_path}': {len(all_files)}")
-            for f in all_files:
-                print(f" - {f.filename} (Last modified: {datetime.fromtimestamp(f.last_write_time)})")
+#            for f in all_files: # for printing all files for debuging
+#                print(f" - {f.filename} (Last modified: {datetime.fromtimestamp(f.last_write_time)})")
             
             files = [f for f in all_files if f.filename.endswith(".txt")]
             print(f"[INFO] Found {len(files)} .txt files in remote path.")        

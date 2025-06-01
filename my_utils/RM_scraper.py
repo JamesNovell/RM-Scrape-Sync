@@ -18,6 +18,7 @@ class VPNLogPuller:
         self.cookie_file = 'session_cookies.pkl'
         self.username = username
         self.password = password
+        self.vpn_was_toggled = False
 
     def save_session(self):
         with open(self.cookie_file, 'wb') as f:
@@ -88,43 +89,36 @@ class VPNLogPuller:
         r = self.session.get(search_url)
         soup = BeautifulSoup(r.content, 'lxml')
     
-        # Try to get IP address
         td = soup.find("td", id=f'{target_serial}Address')
         ip = td.text.strip() if td else None
     
         if ip:
-            print(f"IP for {target_serial} is {ip}")
-            return ip  # Exit early if IP is already available
+            print(f"[INFO] IP for {target_serial} is already available: {ip}")
+            self.vpn_was_toggled = False
+            return ip  # IP already available; no toggle needed
     
-        # If IP not found, attempt to toggle VPN
+        # If no IP, try to toggle VPN
         activity_response, toggle_response = self._toggle_VPN(target_serial)
+        self.vpn_was_toggled = True  # Mark that we toggled it on
     
-        # Parse the returned response
         try:
-            if toggle_response is None:
-                raise ValueError("toggle_response is None")
             raw = toggle_response.text
             if raw.startswith('"') and raw.endswith('"'):
                 raw = raw[1:-1]
             raw = raw.replace('\\u0022', '"')
             response_data = json.loads(raw)
             vpn_address = response_data["MessageData"]["VPNAddress"]
-            print(f"New VPN IP: {vpn_address}")
+            print(f"[INFO] New VPN IP: {vpn_address}")
             return vpn_address
-        except json.JSONDecodeError as e:
-            print("Failed to parse JSON:", e)
-            print("Raw response:", raw)
-            return None
-        except KeyError as e:
-            print("Key not found in response data:", e)
-            print("Parsed response:", response_data)
-            return None
         except Exception as e:
-            print("Unexpected error:", e)
-            print("Raw response:", raw)
+            print(f"[ERROR] Could not parse VPN response: {e}")
             return None
     
     def search_and_toggle_off_by_serial(self, target_serial):
+        if not self.vpn_was_toggled:
+            print(f"[INFO] VPN was not toggled on by this session. Skipping turn-off for {target_serial}.")
+            return
+    
         self.login()
         search_url = f"https://rsm.tidel.com/DeviceList?SearchSerialNumber={target_serial}&PageSize=25&PageIndex=1"
         r = self.session.get(search_url)
@@ -134,8 +128,9 @@ class VPNLogPuller:
         ip = td.text.strip() if td else None
     
         if ip:
-            print(f"The VPN is on for {target_serial}, turning it off.")
+            print(f"[INFO] Turning VPN off for {target_serial}.")
             self._toggle_VPN(target_serial, turn_on=False)
+
     
     def _toggle_VPN(self, target_serial, turn_on=True):
         search_url = f"https://rsm.tidel.com/DeviceList?SearchSerialNumber={target_serial}&PageSize=25&PageIndex=1"
